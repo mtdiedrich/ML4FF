@@ -1,5 +1,4 @@
 """Pipeline for building NFL rookie projections and boom/bust tiers using nflverse data."""
-import io
 import ssl
 from urllib.request import urlopen
 
@@ -7,6 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
+from dataclasses import dataclass
 
 DRAFT_URL = "https://github.com/nflverse/nflverse-data/releases/download/draft_picks/draft_picks.csv"
 COMBINE_URL = "https://github.com/nflverse/nflverse-data/releases/download/combine/combine.csv"
@@ -85,16 +85,56 @@ def assign_tiers(df: pd.DataFrame) -> pd.DataFrame:
     df["tier"] = df["boom_metric"].apply(tier)
     return df
 
+
+@dataclass
+class RookieProjectionPipeline:
+    """Convenience wrapper for running the rookie projection workflow.
+
+    Parameters
+    ----------
+    season: int
+        Draft season for which to build projections.
+    k: int, default 3
+        Number of nearest neighbors to use when building comps.
+    """
+
+    season: int
+    k: int = 3
+
+    def run(self, save_csv: bool = False) -> pd.DataFrame:
+        """Execute the full pipeline and return the resulting DataFrame.
+
+        Parameters
+        ----------
+        save_csv: bool, default False
+            Whether to persist the results to ``rookie_boom_bust_<season>.csv``.
+        """
+
+        rookies, historical, preseason = load_data(self.season)
+        comps = build_comps(rookies, historical, k=self.k)
+        rates = transition_rates(historical)
+        merged = incorporate_transition(rookies, comps, rates)
+        enriched = incorporate_preseason(merged, preseason)
+        final = assign_tiers(enriched)
+        if save_csv:
+            final.to_csv(f"rookie_boom_bust_{self.season}.csv", index=False)
+        return final
+
 def main() -> None:
-    season = 2024
-    rookies, historical, preseason = load_data(season)
-    comps = build_comps(rookies, historical)
-    rates = transition_rates(historical)
-    merged = incorporate_transition(rookies, comps, rates)
-    enriched = incorporate_preseason(merged, preseason)
-    final = assign_tiers(enriched)
-    print(final[["pfr_player_name", "position", "comps", "pred_av", "boom_metric", "tier"]])
-    final.to_csv("rookie_boom_bust.csv", index=False)
+    pipeline = RookieProjectionPipeline(season=2024)
+    final = pipeline.run(save_csv=True)
+    print(
+        final[
+            [
+                "pfr_player_name",
+                "position",
+                "comps",
+                "pred_av",
+                "boom_metric",
+                "tier",
+            ]
+        ]
+    )
 
 if __name__ == "__main__":
     main()
