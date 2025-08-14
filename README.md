@@ -1,4 +1,75 @@
-# ML4FF
+# ML4FF - Machine Learning for Fantasy Football
+
+A comprehensive machine learning toolkit for fantasy football analysis and predictions.
+
+## Overview
+
+ML4FF provides two main prediction pipelines:
+
+1. **Player Dropoff Pipeline** - Predicts which players are likely to experience significant fantasy point declines
+2. **Player Breakout Pipeline** - Predicts which players are likely to have breakout seasons with significant fantasy point increases
+
+Both pipelines use historical NFL player data from nflverse to train machine learning models for fantasy football predictions.
+
+## Features
+
+- Historical backtesting with time-series validation
+- Comprehensive feature engineering using player stats, age, experience, and team changes
+- Risk/potential tier classifications
+- Position-specific analysis
+- CSV export for further analysis
+- Jupyter notebook examples
+
+## Pipelines
+
+### Player Dropoff Pipeline
+
+Predicts players likely to experience 20%+ decline in fantasy points.
+
+- **Location**: `src/player_dropoff_pipeline.py`
+- **Notebook**: `notebooks/player_dropoff_pipeline_usage.ipynb`
+- **Output**: Risk tiers (Low/Medium/High Risk)
+
+### Player Breakout Pipeline  
+
+Predicts players likely to experience 30%+ increase in fantasy points.
+
+- **Location**: `src/player_breakout_pipeline.py`
+- **Notebook**: `notebooks/player_breakout_pipeline_usage.ipynb`
+- **Output**: Potential tiers (Low/Medium/High Potential)
+
+## Quick Start
+
+```python
+# Breakout predictions
+from src.player_breakout_pipeline import PlayerBreakoutPipeline
+
+pipeline = PlayerBreakoutPipeline(
+    seasons=list(range(2018, 2025)),
+    breakout_threshold=0.3
+)
+predictions, results = pipeline.run(predict_season=2025, save_csv=True)
+
+# Dropoff predictions  
+from src.player_dropoff_pipeline import PlayerDropoffPipeline
+
+pipeline = PlayerDropoffPipeline(
+    seasons=list(range(2018, 2025)),
+    dropoff_threshold=0.2
+)
+predictions, results = pipeline.run(predict_season=2025, save_csv=True)
+```
+
+## Dependencies
+
+- pandas
+- numpy
+- scikit-learn  
+- matplotlib
+
+## Data Source
+
+All player data is sourced from [nflverse](https://github.com/nflverse/nflverse-data), which provides comprehensive NFL statistics and roster information.
 
 This repository explores machine learning approaches for fantasy football analytics.
 
