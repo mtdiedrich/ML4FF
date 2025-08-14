@@ -50,7 +50,6 @@ Based on branch analysis, the full project contains:
   print('ML workflow test passed:', model.score(data[['x']], data['y']) > 0.9)
   "
   ```
-  ```
 
 ### Validation
 - ALWAYS test new ML code with sample data before committing.
