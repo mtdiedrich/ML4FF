@@ -134,7 +134,29 @@ pip install numpy pandas scikit-learn
 
 ## Notebooks
 
-The `notebooks/` directory contains Jupyter notebooks demonstrating usage of both pipelines:
+The `notebooks/` directory contains Jupyter notebooks demonstrating usage of the pipelines:
 - `rookie_pipeline_usage.ipynb` - Demonstrates the rookie projection pipeline
 - `player_dropoff_pipeline_usage.ipynb` - Demonstrates the player dropoff prediction pipeline
+- `player_breakout_pipeline_usage.ipynb` - Demonstrates the player breakout prediction pipeline (abstracted)
+- `player_breakout_pipeline_procedural.ipynb` - **NEW**: Procedural implementation of the breakout pipeline with discrete steps
+
+### Procedural Breakout Pipeline
+
+The new procedural notebook (`player_breakout_pipeline_procedural.ipynb`) deconstructs the abstraction of the PlayerBreakoutPipeline into discrete functional blocks. Each cell represents a specific step in the process:
+
+1. **Setup & Imports** - Library and function imports
+2. **Configuration** - Pipeline parameters
+3. **Data Loading** - Raw NFL data from nflverse
+4. **Season Aggregation** - Weekly to season-level stats
+5. **Breakout Calculation** - Historical breakout identification
+6. **Feature Engineering** - Predictive feature creation
+7. **Feature Selection** - Relevant variable selection
+8. **Data Preparation** - Training/test splits and scaling
+9. **Model Training** - Random Forest classifier training
+10. **Model Evaluation** - Performance assessment
+11. **Feature Analysis** - Understanding important predictors
+12. **Predictions Generation** - Breakout forecasts
+13. **Analysis & Visualization** - Results interpretation
+
+This approach provides greater transparency and customization compared to the abstracted pipeline, while maintaining identical functionality.
 
