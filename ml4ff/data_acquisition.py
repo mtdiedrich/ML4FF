@@ -50,7 +50,7 @@ class DataAcquisitionPipeline:
     def __post_init__(self):
         """Initialize data acquisition pipeline."""
         self.ctx = ssl._create_unverified_context()
-        Path(self.output_dir).mkdir(exist_ok=True)
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         
     def download_player_stats(self) -> pd.DataFrame:
         """Download comprehensive player statistics.

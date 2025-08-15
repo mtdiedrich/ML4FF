@@ -205,7 +205,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ML4FF specific output files
 rookie_boom_bust.csv
 player_dropoff_predictions_*.csv
 dropoff_predictions_*.csv
 high_risk_players_*.csv
+player_breakout_predictions_*.csv
+high_potential_players_*.csv
+breakout_backtest_summary.csv
+backtest_summary.csv
+detailed_backtest_predictions.csv
+high_confidence_correct_predictions.csv
+yearly_position_summary.csv
+
+# Data directories - exclude downloaded data files
+data/
+test_data/
+*.csv
