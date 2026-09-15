@@ -1,140 +1,73 @@
-# ML4FF - Machine Learning for Fantasy Football
+# ML4FF — Machine Learning for Fantasy Football
 
-A comprehensive machine learning toolkit for fantasy football analysis and predictions.
+**Predicting which NFL players are about to fall off a cliff — validated over 15 seasons of walk-forward backtesting.**
 
-## Overview
+## Results
 
-ML4FF provides two main prediction pipelines:
+The player dropoff pipeline was validated with proper time-series (walk-forward) validation: every season from 2010–2024 was predicted using *only data available before that season*. No random train/test splits.
 
-1. **Player Dropoff Pipeline** - Predicts which players are likely to experience significant fantasy point declines
-2. **Player Breakout Pipeline** - Predicts which players are likely to have breakout seasons with significant fantasy point increases
+- **3,389 out-of-sample predictions** across 15 seasons
+- **Overall AUC: 0.878** (per-season range 0.73–0.92)
+- **Risk tiers are calibrated:** players flagged High Risk actually declined **87.9%** of the time, vs. 46.4% (Medium) and 11.9% (Low), against a ~45% base rate
 
-Both pipelines use historical NFL player data from nflverse to train machine learning models for fantasy football predictions.
+![Walk-forward AUC by season](results/backtest_auc_by_year.png)
 
-## Features
+![Risk tier calibration](results/risk_tier_calibration.png)
 
-- Historical backtesting with time-series validation
-- Comprehensive feature engineering using player stats, age, experience, and team changes
-- Risk/potential tier classifications
-- Position-specific analysis
-- CSV export for further analysis
-- Jupyter notebook examples
+### Notable calls
+
+High-confidence predictions (>70% dropoff probability) that proved correct — 670 in total, including:
+
+| Season | Player | Pos | Team | Prior fantasy points | Dropoff prob. |
+|---|---|---|---|---|---|
+| 2021 | Derrick Henry | RB | TEN | 175.3 | 0.86 |
+| 2017 | Ezekiel Elliott | RB | DAL | 177.2 | 0.84 |
+| 2024 | Tua Tagovailoa | QB | MIA | 181.6 | 0.82 |
+| 2021 | Alvin Kamara | RB | NO | 187.7 | 0.78 |
+| 2021 | Dalvin Cook | RB | MIN | 172.3 | 0.78 |
+| 2019 | Saquon Barkley | RB | NYG | 192.1 | 0.72 |
+| 2021 | Russell Wilson | QB | SEA | 242.8 | 0.71 |
+| 2018 | Carson Wentz | QB | PHI | 192.7 | 0.71 |
+
+Full list: [`results/high_confidence_correct_predictions.csv`](results/high_confidence_correct_predictions.csv). Validation detail: [`results/SUMMARY_REPORT.txt`](results/SUMMARY_REPORT.txt).
+
+### What actually predicts decline
+
+Feature importance from the validated model:
+
+1. **Games played** (injury) — the dominant signal
+2. **Workload relative to career peak**
+3. Position and team changes — moderate impact
 
 ## Pipelines
 
-### Player Dropoff Pipeline
+| Pipeline | What it predicts | Status |
+|---|---|---|
+| **Dropoff** (`src/player_dropoff_pipeline.py`) | 20%+ fantasy-point decline | ✅ Backtested (results above) |
+| **Breakout** (`src/player_breakout_pipeline.py`) | 30%+ fantasy-point increase | ⚠️ Built, not yet backtested |
+| **Rookie boom/bust** (`src/rookie_projection_pipeline.py`) | Rookie tiering from college production + combine + transition rates + preseason usage | ⚠️ Built, not yet backtested |
 
-Predicts players likely to experience 20%+ decline in fantasy points.
+## Quick start
 
-- **Location**: `src/player_dropoff_pipeline.py`
-- **Notebook**: `notebooks/player_dropoff_pipeline_usage.ipynb`
-- **Output**: Risk tiers (Low/Medium/High Risk)
-
-### Player Breakout Pipeline  
-
-Predicts players likely to experience 30%+ increase in fantasy points.
-
-- **Location**: `src/player_breakout_pipeline.py`
-- **Notebook**: `notebooks/player_breakout_pipeline_usage.ipynb`
-- **Output**: Potential tiers (Low/Medium/High Potential)
-
-## Quick Start
-
-```python
-# Breakout predictions
-from src.player_breakout_pipeline import PlayerBreakoutPipeline
-
-pipeline = PlayerBreakoutPipeline(
-    seasons=list(range(2018, 2025)),
-    breakout_threshold=0.3
-)
-predictions, results = pipeline.run(predict_season=2025, save_csv=True)
-
-# Dropoff predictions  
-from src.player_dropoff_pipeline import PlayerDropoffPipeline
-
-pipeline = PlayerDropoffPipeline(
-    seasons=list(range(2018, 2025)),
-    dropoff_threshold=0.2
-)
-predictions, results = pipeline.run(predict_season=2025, save_csv=True)
+```bash
+pip install -r requirements.txt
+python src/player_dropoff_pipeline.py    # writes predictions + backtest CSVs to cwd
 ```
 
-## Dependencies
+Notebooks demonstrating each pipeline are in [`notebooks/`](notebooks/).
 
-- pandas
-- numpy
-- scikit-learn  
-- matplotlib
+## Data
 
-## Data Source
+All player data from [nflverse](https://github.com/nflverse/nflverse-data) (2005–2024 seasons).
 
-All player data is sourced from [nflverse](https://github.com/nflverse/nflverse-data), which provides comprehensive NFL statistics and roster information.
+## Repo layout
 
-This repository explores machine learning approaches for fantasy football analytics.
-
-## Rookie Projection Pipeline
-
-The `rookie_projection_pipeline.py` script builds statistical comparisons for incoming NFL rookies.
-It automatically downloads real historical and preseason data from the [`nflverse` project](https://github.com/nflverse/nflverse-data), combines college production (from the draft dataset), combine testing results, historical rookie transition rates by position, and preseason snap usage to create an initial boom/bust tiering.
-
-Running the script produces a `rookie_boom_bust.csv` file containing the projections.
-
-### Usage
 ```
-python rookie_projection_pipeline.py
+src/        pipeline code
+notebooks/  usage examples
+results/    validated outputs: backtest summaries, calibration, predictions
 ```
 
-## Player Dropoff Prediction Pipeline
+## License
 
-The `player_dropoff_pipeline.py` script predicts which fantasy football players are at risk of significant performance declines in the upcoming season. It uses extensive historical player performance data from nflverse (2005-2024) to identify patterns that lead to fantasy point dropoffs.
-
-The pipeline analyzes 20 seasons of data including:
-- Fantasy points and performance metrics
-- Player age and experience  
-- Team changes
-- Workload and usage patterns
-- Position-specific factors
-
-**NEW: Historical Backtesting** - The pipeline now includes comprehensive backtesting across 15 seasons (2010-2024) to validate prediction accuracy. Results show:
-- Overall AUC: 0.878 (excellent predictive performance)
-- High-risk predictions: 87.9% actual dropoff rate
-- 3,389 historical predictions validated
-
-Running the script produces predictions with dropoff probabilities, risk tiers, and detailed backtest analysis.
-
-### Usage
-```
-python player_dropoff_pipeline.py
-```
-
-### Features
-- **Extended Historical Data**: Uses 20 seasons (2005-2024) for maximum data utilization
-- **Proper Backtesting**: Time-series validation across 15 years with 3,389 predictions
-- **Dropoff Definition**: Configurable threshold for performance decline (default: 20%)
-- **Risk Tiers**: Players categorized as Low, Medium, or High risk with validated accuracy
-- **Feature Importance**: Identifies which factors most predict dropoffs
-- **Position Analysis**: Position-specific dropoff patterns and validation
-- **Model Validation**: Comprehensive backtest results showing 87.9% accuracy for high-risk predictions
-- **Detailed Analysis**: Multiple output files for deep dive analysis
-
-### Output Files
-- `player_dropoff_predictions_2025.csv` - Main predictions for 2025 season
-- `backtest_summary.csv` - Year-by-year validation performance
-- `detailed_backtest_predictions.csv` - Complete historical validation dataset
-- `high_risk_players_2025.csv` - Focused high-risk player list
-- `high_confidence_correct_predictions.csv` - Historical high-confidence successes
-- `yearly_position_summary.csv` - Position-specific analysis by year
-
-### Dependencies
-Both pipelines require `numpy`, `pandas`, and `scikit-learn`:
-```
-pip install numpy pandas scikit-learn
-```
-
-## Notebooks
-
-The `notebooks/` directory contains Jupyter notebooks demonstrating usage of both pipelines:
-- `rookie_pipeline_usage.ipynb` - Demonstrates the rookie projection pipeline
-- `player_dropoff_pipeline_usage.ipynb` - Demonstrates the player dropoff prediction pipeline
-
+MIT
